@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.16)
 
 project(QDeskWatch VERSION 1.0.0 LANGUAGES CXX)
 
+set(APP_BUILD_VERSION "${PROJECT_VERSION}" CACHE STRING "Application display/build version")
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -69,7 +71,7 @@ target_include_directories(QDeskWatch PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 target_compile_definitions(QDeskWatch
     PRIVATE
         APP_NAME="${PROJECT_NAME}"
-        APP_VERSION="${PROJECT_VERSION}"
+        APP_VERSION="${APP_BUILD_VERSION}"
         APP_QML_URI="${PROJECT_NAME}"
 )
 
