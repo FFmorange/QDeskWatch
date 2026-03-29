@@ -1,0 +1,43 @@
+# Build directories
+build/
+vs_build/
+out/
+install/
+cmake-build-*/
+bin/
+plugins/
+
+# CMake generated files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CTestTestfile.cmake
+*.cmake
+!CMakeLists.txt
+
+# Qt Creator
+*.user
+*.user.*
+*.qmlproject.user
+*.creator.user
+
+# Compiled output
+*.o
+*.obj
+*.a
+*.lib
+*.dll
+*.exe
+*.pdb
+*.ilk
+*.exp
+
+# Qt generated
+*_plugin_import.cpp
+*_qmltyperegistrations.cpp
+qmldir
+
+# OS specific
+.DS_Store
+Thumbs.db
+desktop.ini

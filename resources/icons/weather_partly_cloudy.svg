@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- Small sun -->
+  <circle cx="8.5" cy="7.5" r="3" fill="#FFD700"/>
+  <g stroke="#FFD700" stroke-width="1.2" stroke-linecap="round">
+    <line x1="8.5" y1="3"    x2="8.5" y2="4.2"/>
+    <line x1="8.5" y1="10.8" x2="8.5" y2="12"/>
+    <line x1="4"   y1="7.5"  x2="5.2" y2="7.5"/>
+    <line x1="11.8" y1="7.5" x2="13" y2="7.5"/>
+    <line x1="5.4" y1="4.4"  x2="6.3" y2="5.3"/>
+    <line x1="10.7" y1="9.7" x2="11.6" y2="10.6"/>
+    <line x1="11.6" y1="4.4" x2="10.7" y2="5.3"/>
+    <line x1="6.3"  y1="9.7" x2="5.4"  y2="10.6"/>
+  </g>
+  <!-- Cloud (overlapping sun) -->
+  <circle cx="9"    cy="15"   r="3.2" fill="#C8C8C8"/>
+  <circle cx="15"   cy="13.5" r="4"   fill="#C8C8C8"/>
+  <rect   x="6"  y="15" width="13" height="5" rx="2.5" fill="#C8C8C8"/>
+</svg>

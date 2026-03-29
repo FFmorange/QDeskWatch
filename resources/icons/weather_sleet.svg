@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- Slightly blue-tinted cloud for freezing -->
+  <circle cx="8.5" cy="7"   r="3"   fill="#B8C8D8"/>
+  <circle cx="15"  cy="5.5" r="3.8" fill="#B8C8D8"/>
+  <rect   x="5.5" y="7" width="13" height="5" rx="2.5" fill="#B8C8D8"/>
+  <!-- Rain + snow dot (sleet) -->
+  <g stroke="#85C1F5" stroke-width="1.5" stroke-linecap="round">
+    <line x1="7"  y1="14" x2="5.5"  y2="19"/>
+    <line x1="17" y1="14" x2="15.5" y2="19"/>
+  </g>
+  <circle cx="12" cy="17" r="1.5" fill="white"/>
+</svg>
