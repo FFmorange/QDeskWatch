@@ -28,7 +28,7 @@ Item {
     // ── 当前心情图标（点击切换弹窗）──────────────────────────────────────────
     AnimatedImage {
         anchors.fill: parent
-        source:   "qrc:/qt/qml/iWatch/resources/gifs/" + root.currentMood
+        source:   "qrc:/qt/qml/QDeskWatch/resources/gifs/" + root.currentMood
         playing:  true
         fillMode: Image.PreserveAspectFit
     }
@@ -114,7 +114,7 @@ Item {
                             anchors.topMargin:        Math.round(4 * PS.scale)
                             width:   Math.round(_cellSize * 0.58)
                             height:  width
-                            source:  "qrc:/qt/qml/iWatch/resources/gifs/" + modelData.file
+                            source:  "qrc:/qt/qml/QDeskWatch/resources/gifs/" + modelData.file
                             playing: popup.visible
                             fillMode: Image.PreserveAspectFit
                         }

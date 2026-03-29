@@ -1,4 +1,4 @@
-name: Windows CI
+﻿name: Windows CI
 
 on:
   push:
@@ -21,6 +21,7 @@ env:
   QT_VERSION: 6.8.3
   QT_ARCH: win64_msvc2022_64
   BUILD_CONFIG: Release
+  INSTALL_DIR: ${{ github.workspace }}/install
 
 jobs:
   build-check:
@@ -60,13 +61,13 @@ jobs:
           }
 
       - name: Install
-        run: cmake --install build --config ${{ env.BUILD_CONFIG }} --prefix install
+        run: cmake --install build --config ${{ env.BUILD_CONFIG }} --prefix "${{ env.INSTALL_DIR }}"
 
       - name: Upload install artifact
         uses: actions/upload-artifact@v4
         with:
-          name: iWatch-dev-build-${{ env.BUILD_CONFIG }}
-          path: install
+          name: QDeskWatch-dev-build-${{ env.BUILD_CONFIG }}
+          path: ${{ env.INSTALL_DIR }}
           if-no-files-found: error
 
   release-package:
@@ -100,31 +101,33 @@ jobs:
         run: cmake --build build --config ${{ env.BUILD_CONFIG }} --parallel
 
       - name: Install
-        run: cmake --install build --config ${{ env.BUILD_CONFIG }} --prefix install
+        run: cmake --install build --config ${{ env.BUILD_CONFIG }} --prefix "${{ env.INSTALL_DIR }}"
 
-      - name: Derive release tag from CMake version
+      - name: Derive release tag from CMake semantic version
         run: |
           $cmake = Get-Content CMakeLists.txt -Raw
-          if ($cmake -match 'project\s*\(\s*[^\s]+\s+VERSION\s+([0-9]+(?:\.[0-9]+)+)') {
-            $tag = "v$($Matches[1])"
+          if ($cmake -match 'project\s*\(\s*[^\s]+\s+VERSION\s+([0-9]+\.[0-9]+\.[0-9]+)') {
+            $version = $Matches[1]
+            $tag = "v$version"
+            "PROJECT_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
             "RELEASE_TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           } else {
-            throw "Could not determine project version from CMakeLists.txt"
+            throw "Could not determine a three-part semantic version (for example 1.0.0) from CMakeLists.txt"
           }
 
       - name: Archive release package
         run: |
-          $archiveName = "iWatch-$env:RELEASE_TAG-windows.zip"
+          $archiveName = "QDeskWatch-$env:RELEASE_TAG-windows.zip"
           if (Test-Path $archiveName) {
             Remove-Item -LiteralPath $archiveName -Force
           }
-          Compress-Archive -Path "install/*" -DestinationPath $archiveName
+          Compress-Archive -Path "$env:INSTALL_DIR/*" -DestinationPath $archiveName
           "ARCHIVE_NAME=$archiveName" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Upload release artifact
         uses: actions/upload-artifact@v4
         with:
-          name: iWatch-${{ env.RELEASE_TAG }}-windows
+          name: QDeskWatch-${{ env.RELEASE_TAG }}-windows
           path: ${{ env.ARCHIVE_NAME }}
           if-no-files-found: error
 
@@ -140,3 +143,6 @@ jobs:
           } else {
             gh release create $tag $asset --target release --title $tag --generate-notes
           }
+
+
+

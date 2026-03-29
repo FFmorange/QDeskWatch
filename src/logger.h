@@ -15,7 +15,7 @@
  *  - 日志写入 C:/Users/<user>/AppData/Local/<AppName>/cache/<AppName>/<ts>_<AppName>.log
  *  - 同时镜像到 stderr（Qt Creator 输出面板仍可见）
  *  - 线程安全
- *  - 可在 QML 中以单例访问：import iWatch → Logger.info("msg")
+ *  - 可在 QML 中以单例访问：import QDeskWatch → Logger.info("msg")
  *
  * 日志格式：
  *  [yyyy-MM-dd HH:mm:ss.zzz] [LEVEL] [TID:XXXXXXXX] [Category] [func] [file:line] message

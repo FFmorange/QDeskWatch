@@ -17,8 +17,8 @@ static bool contextPropertys(QQmlApplicationEngine &engine)
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
-    app.setApplicationName("iWatch");
-    app.setApplicationVersion("0.1");
+    app.setApplicationName(APP_NAME);
+    app.setApplicationVersion(APP_VERSION);
 
 #ifdef _WIN32
     DumpCatcher::install();
@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
         []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection);
     contextPropertys(engine);
-    engine.loadFromModule("iWatch", "Main");
+    engine.loadFromModule(APP_QML_URI, "Main");
 
     return app.exec();
 }

@@ -7,7 +7,7 @@ import QtQuick
 QtObject {
     id: root
 
-    property string _iconsBase:   "qrc:/qt/qml/iWatch/resources/icons/"
+    property string _iconsBase:   "qrc:/qt/qml/QDeskWatch/resources/icons/"
     property string _iconsFormat: "svg"
 
     // 按名称返回图标 URL
@@ -19,7 +19,7 @@ QtObject {
     Component.onCompleted: {
         var xhr = new XMLHttpRequest()
         // 同步读取，确保首帧渲染前已就绪
-        xhr.open("GET", "qrc:/qt/qml/iWatch/resources/default.theme", false)
+        xhr.open("GET", "qrc:/qt/qml/QDeskWatch/resources/default.theme", false)
         xhr.send()
         if (!xhr.responseText) return
         try {
@@ -27,7 +27,7 @@ QtObject {
             if (cfg.icons) {
                 if (cfg.icons.format) _iconsFormat = cfg.icons.format
                 if (cfg.icons.path)
-                    _iconsBase = "qrc:/qt/qml/iWatch/" + cfg.icons.path
+                    _iconsBase = "qrc:/qt/qml/QDeskWatch/" + cfg.icons.path
             }
         } catch(e) {
             console.warn("Theme: failed to parse default.theme –", e)

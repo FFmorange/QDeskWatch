@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(iWatch VERSION 0.1 LANGUAGES CXX)
+project(QDeskWatch VERSION 1.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -39,13 +39,13 @@ set_source_files_properties("qml/singletons/Theme.qml"
         QT_QML_SINGLETON_TYPE TRUE
 )
 
-qt_add_executable(appiWatch
+qt_add_executable(QDeskWatch
     main.cpp
     ${APP_SOURCES}
 )
 
-qt_add_qml_module(appiWatch
-    URI iWatch
+qt_add_qml_module(QDeskWatch
+    URI QDeskWatch
     QML_FILES
         Main.qml
         ${APP_QML_FILES}
@@ -56,33 +56,40 @@ qt_add_qml_module(appiWatch
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
 # explicit, fixed bundle identifier manually though.
-set_target_properties(appiWatch PROPERTIES
-#    MACOSX_BUNDLE_GUI_IDENTIFIER com.example.appiWatch
+set_target_properties(QDeskWatch PROPERTIES
+#    MACOSX_BUNDLE_GUI_IDENTIFIER com.example.QDeskWatch
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
-    MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+    MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION}
     MACOSX_BUNDLE TRUE
     WIN32_EXECUTABLE TRUE
 )
 
-target_include_directories(appiWatch PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
+target_include_directories(QDeskWatch PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
-target_link_libraries(appiWatch
+target_compile_definitions(QDeskWatch
+    PRIVATE
+        APP_NAME="${PROJECT_NAME}"
+        APP_VERSION="${PROJECT_VERSION}"
+        APP_QML_URI="${PROJECT_NAME}"
+)
+
+target_link_libraries(QDeskWatch
     PRIVATE Qt6::Quick Qt6::Core Qt6::Network
 )
 
 if(WIN32)
-    target_link_libraries(appiWatch PRIVATE dbghelp)
+    target_link_libraries(QDeskWatch PRIVATE dbghelp)
 endif()
 
 include(GNUInstallDirs)
-install(TARGETS appiWatch
+install(TARGETS QDeskWatch
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
 qt_generate_deploy_qml_app_script(
-    TARGET appiWatch
+    TARGET QDeskWatch
     OUTPUT_SCRIPT qt_deploy_script
     MACOS_BUNDLE_POST_BUILD
     NO_UNSUPPORTED_PLATFORM_ERROR

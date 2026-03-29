@@ -51,7 +51,7 @@ void WeatherManager::fetchLocation()
     set_loading(true);
 
     QNetworkRequest req(QUrl("https://ipapi.co/json/"));
-    req.setHeader(QNetworkRequest::UserAgentHeader, "iWatch/1.0");
+    req.setHeader(QNetworkRequest::UserAgentHeader, "QDeskWatch/1.0.0");
 
     auto *reply = m_nam->get(req);
     connect(reply, &QNetworkReply::finished, this, [this, reply]() {
