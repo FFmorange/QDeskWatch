@@ -204,3 +204,4 @@ jobs:
           } else {
             gh release create $tag $zipAsset $setupAsset --target release --title $tag --generate-notes
           }
+
