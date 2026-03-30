@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(QDeskWatch VERSION 1.0.0 LANGUAGES CXX)
+project(QDeskWatch VERSION 1.0.1 LANGUAGES CXX)
 
 set(APP_BUILD_VERSION "${PROJECT_VERSION}" CACHE STRING "Application display/build version")
 
