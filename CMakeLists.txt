@@ -27,6 +27,8 @@ file(GLOB_RECURSE APP_QML_FILES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/qml/*.js"
 )
 
+set(APP_PLATFORM_SOURCES)
+
 # 注册 PropertySingleton 为模块单例，并设置别名 PS
 # QT_RESOURCE_ALIAS 决定模块内文件名，进而决定 QML 组件名
 set_source_files_properties("qml/singletons/PropertySingleton.qml"
@@ -41,9 +43,26 @@ set_source_files_properties("qml/singletons/Theme.qml"
         QT_QML_SINGLETON_TYPE TRUE
 )
 
+if(WIN32)
+    set(APP_ICON_ICO "${CMAKE_CURRENT_SOURCE_DIR}/resources/app-icon/qdeskwatch.ico")
+    file(TO_NATIVE_PATH "${APP_ICON_ICO}" APP_ICON_ICO_NATIVE)
+    string(REPLACE "\\" "\\\\" APP_ICON_ICO_RC "${APP_ICON_ICO_NATIVE}")
+
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/packaging/windows/qdeskwatch.rc.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/qdeskwatch.rc"
+        @ONLY
+    )
+
+    list(APPEND APP_PLATFORM_SOURCES
+        "${CMAKE_CURRENT_BINARY_DIR}/qdeskwatch.rc"
+    )
+endif()
+
 qt_add_executable(QDeskWatch
     main.cpp
     ${APP_SOURCES}
+    ${APP_PLATFORM_SOURCES}
 )
 
 qt_add_qml_module(QDeskWatch

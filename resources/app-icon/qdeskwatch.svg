@@ -1,0 +1,37 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="shellGradient" x1="0" y1="50" x2="0" y2="974" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#26292e"/>
+      <stop offset="1" stop-color="#0a0b0e"/>
+    </linearGradient>
+    <linearGradient id="screenGradient" x1="0" y1="102" x2="0" y2="922" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#141518"/>
+      <stop offset="1" stop-color="#07080a"/>
+    </linearGradient>
+    <radialGradient id="faceGradient" cx="50%" cy="45%" r="55%">
+      <stop offset="0" stop-color="#ffe774"/>
+      <stop offset="0.62" stop-color="#f4c74f"/>
+      <stop offset="1" stop-color="#bc6200"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="90" y="68" width="844" height="924" rx="205" fill="#000" opacity=".16"/>
+  <rect x="90" y="50" width="844" height="924" rx="205" fill="url(#shellGradient)"/>
+  <rect x="104" y="64" width="816" height="896" rx="191" fill="none" stroke="#c0c6cd" stroke-width="28"/>
+  <rect x="142" y="102" width="740" height="820" rx="170" fill="url(#screenGradient)"/>
+
+  <circle cx="510" cy="530" r="280" fill="url(#faceGradient)"/>
+  <circle cx="510" cy="530" r="276" fill="none" stroke="#ffd85c" stroke-opacity=".55" stroke-width="8"/>
+  <ellipse cx="387" cy="365" rx="82" ry="54" fill="#fff" opacity=".21"/>
+
+  <ellipse cx="384" cy="467" rx="44" ry="59" fill="#1f1504"/>
+  <ellipse cx="640" cy="467" rx="44" ry="59" fill="#1f1504"/>
+
+  <path
+    d="M367 647 Q510 760 655 647"
+    fill="none"
+    stroke="#723a00"
+    stroke-width="34"
+    stroke-linecap="round"
+    stroke-linejoin="round"/>
+</svg>

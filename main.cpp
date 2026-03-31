@@ -1,4 +1,5 @@
 #include <QGuiApplication>
+#include <QIcon>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 
@@ -19,6 +20,7 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
     app.setApplicationName(APP_NAME);
     app.setApplicationVersion(APP_VERSION);
+    app.setWindowIcon(QIcon(QStringLiteral(":/qt/qml/QDeskWatch/resources/app-icon/qdeskwatch.ico")));
 
 #ifdef _WIN32
     DumpCatcher::install();
