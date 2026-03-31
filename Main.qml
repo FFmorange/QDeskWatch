@@ -7,10 +7,9 @@ Window {
 
     width:  Math.round(44 * 3 * PS.scale)
     height: Math.round(49 * 3 * PS.scale)
-
     visible: true
-    flags:   Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
-    color:   "transparent"
+    flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
+    color: "transparent"
 
     WatchFace {
         anchors.centerIn: parent

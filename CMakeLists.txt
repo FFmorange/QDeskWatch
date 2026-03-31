@@ -7,7 +7,7 @@ set(APP_BUILD_VERSION "${PROJECT_VERSION}" CACHE STRING "Application display/bui
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick Core Network)
+find_package(Qt6 REQUIRED COMPONENTS Quick Core Network Widgets)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
@@ -95,7 +95,7 @@ target_compile_definitions(QDeskWatch
 )
 
 target_link_libraries(QDeskWatch
-    PRIVATE Qt6::Quick Qt6::Core Qt6::Network
+    PRIVATE Qt6::Quick Qt6::Core Qt6::Network Qt6::Widgets
 )
 
 if(WIN32)
