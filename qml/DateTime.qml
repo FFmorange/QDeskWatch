@@ -3,7 +3,6 @@ import QtQuick
 Item {
     id: root
 
-    // 设为 false 可禁用秒数翻转动画
     property bool flipEnabled: true
 
     function dateString(date) {
@@ -11,60 +10,59 @@ Item {
         return date.getDate() + " " + weekdays[date.getDay()]
     }
 
-    implicitWidth:  timeRow.implicitWidth
+    implicitWidth: Math.max(timeRow.implicitWidth, dateText.implicitWidth)
     implicitHeight: dateText.height + Math.round(1 * PS.scale) + timeRow.implicitHeight
 
-    // ── 日期（小）────────────────────────────────────────────────────────────
+    // 日期
     Text {
         id: dateText
-        anchors.top:         parent.top
-        anchors.topMargin:   Math.round(5 * PS.scale)
-        anchors.right:       parent.right
+        anchors.top: parent.top
+        anchors.topMargin: Math.round(5 * PS.scale)
+        anchors.right: parent.right
         anchors.rightMargin: Math.round(5 * PS.scale)
-        text:           dateString(new Date())
-        color:          "#ed7676"
-        font.bold:      true
+        text: root.dateString(new Date())
+        color: "#ed7676"
+        font.bold: true
         font.pixelSize: Math.round(5 * PS.scale)
     }
 
-    // ── 字体度量：用于修正冒号垂直偏移 ──────────────────────────────────────────
     FontMetrics {
         id: fm
         font.pixelSize: Math.round(12 * PS.scale)
-        font.bold:      true
+        font.bold: true
     }
 
-    // ── 时间（大）：时 + 冒号（呼吸动画）+ 分 + 秒（十位 + 个位）────────────
+    // 时间
     Item {
         id: timeRow
-        anchors.top:         dateText.bottom
-        anchors.topMargin:   Math.round(1 * PS.scale)
-        anchors.right:       parent.right
+        anchors.top: dateText.bottom
+        anchors.topMargin: Math.round(1 * PS.scale)
+        anchors.right: parent.right
         anchors.rightMargin: Math.round(5 * PS.scale)
-        implicitWidth:  hourText.implicitWidth + colonText.implicitWidth
-                        + minText.implicitWidth + Math.round(2 * PS.scale)
-                        + secTens.implicitWidth + secUnits.implicitWidth
+        implicitWidth: hourText.implicitWidth + colonText.implicitWidth
+                       + minText.implicitWidth + Math.round(2 * PS.scale)
+                       + secTens.implicitWidth + secUnits.implicitWidth
         implicitHeight: hourText.implicitHeight
 
         Text {
             id: hourText
-            anchors.right:          colonText.left
+            anchors.right: colonText.left
             anchors.verticalCenter: parent.verticalCenter
-            text:           Qt.formatTime(new Date(), "hh")
-            color:          "white"
+            text: Qt.formatTime(new Date(), "hh")
+            color: "white"
             font.pixelSize: Math.round(12 * PS.scale)
-            font.bold:      true
+            font.bold: true
         }
 
         Text {
             id: colonText
-            anchors.right:                minText.left
-            anchors.verticalCenter:       parent.verticalCenter
+            anchors.right: minText.left
+            anchors.verticalCenter: parent.verticalCenter
             anchors.verticalCenterOffset: -fm.descent / 2
-            text:           ":"
-            color:          "white"
+            text: ":"
+            color: "white"
             font.pixelSize: Math.round(12 * PS.scale)
-            font.bold:      true
+            font.bold: true
 
             SequentialAnimation on opacity {
                 loops: Animation.Infinite
@@ -75,53 +73,50 @@ Item {
 
         Text {
             id: minText
-            anchors.right:        secTens.left
-            anchors.rightMargin:  Math.round(2 * PS.scale)
+            anchors.right: secTens.left
+            anchors.rightMargin: Math.round(2 * PS.scale)
             anchors.verticalCenter: parent.verticalCenter
-            text:           Qt.formatTime(new Date(), "mm")
-            color:          "white"
+            text: Qt.formatTime(new Date(), "mm")
+            color: "white"
             font.pixelSize: Math.round(12 * PS.scale)
-            font.bold:      true
+            font.bold: true
         }
 
-        // 秒：十位（每 10 秒才变一次）
         FlipText {
             id: secTens
-            anchors.right:  secUnits.left
+            anchors.right: secUnits.left
             anchors.bottom: parent.bottom
-            text:        Qt.formatTime(new Date(), "ss")[0]
+            text: Qt.formatTime(new Date(), "ss")[0]
             flipEnabled: root.flipEnabled
-            textColor:   "white"
-            pixelSize:   Math.round(7 * PS.scale)
-            bold:        true
+            textColor: "white"
+            pixelSize: Math.round(7 * PS.scale)
+            bold: true
         }
 
-        // 秒：个位（每秒变一次）
         FlipText {
             id: secUnits
-            anchors.right:  parent.right
+            anchors.right: parent.right
             anchors.bottom: parent.bottom
-            text:        Qt.formatTime(new Date(), "ss")[1]
+            text: Qt.formatTime(new Date(), "ss")[1]
             flipEnabled: root.flipEnabled
-            textColor:   "white"
-            pixelSize:   Math.round(7 * PS.scale)
-            bold:        true
+            textColor: "white"
+            pixelSize: Math.round(7 * PS.scale)
+            bold: true
         }
     }
 
-    // ── 每秒刷新 ──────────────────────────────────────────────────────────────
     Timer {
         interval: 1000
-        running:  true
-        repeat:   true
+        running: true
+        repeat: true
         onTriggered: {
             var now = new Date()
-            var ss  = Qt.formatTime(now, "ss")
-            hourText.text  = Qt.formatTime(now, "hh")
-            minText.text   = Qt.formatTime(now, "mm")
-            secTens.text   = ss[0]
-            secUnits.text  = ss[1]
-            dateText.text  = dateString(now)
+            var ss = Qt.formatTime(now, "ss")
+            hourText.text = Qt.formatTime(now, "hh")
+            minText.text = Qt.formatTime(now, "mm")
+            secTens.text = ss[0]
+            secUnits.text = ss[1]
+            dateText.text = root.dateString(now)
         }
     }
 }

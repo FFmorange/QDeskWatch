@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <defs>
+    <mask id="locationGroundMaskClassic">
+      <rect width="24" height="24" fill="white"/>
+      <path
+        d="M12 3.7c-3.08 0-5.58 2.38-5.58 5.31 0 3.08 2.62 6 4.33 7.69a1.73 1.73 0 0 0 2.5 0c1.71-1.69 4.33-4.61 4.33-7.69 0-2.93-2.5-5.31-5.58-5.31Z"
+        fill="black"
+        stroke="black"
+        stroke-width="2"
+        stroke-linejoin="round"
+      />
+      <circle cx="12" cy="9.05" r="2.7" fill="black"/>
+    </mask>
+  </defs>
+  <ellipse
+    cx="12"
+    cy="18.25"
+    rx="6.35"
+    ry="2.55"
+    fill="none"
+    stroke="#8FD3FF"
+    stroke-width="1.5"
+    mask="url(#locationGroundMaskClassic)"
+  />
+  <path
+    d="M12 3.7c-3.08 0-5.58 2.38-5.58 5.31 0 3.08 2.62 6 4.33 7.69a1.73 1.73 0 0 0 2.5 0c1.71-1.69 4.33-4.61 4.33-7.69 0-2.93-2.5-5.31-5.58-5.31Z"
+    fill="none"
+    stroke="#8FD3FF"
+    stroke-width="1.5"
+    stroke-linejoin="round"
+  />
+  <circle cx="12" cy="9.05" r="2" fill="#8FD3FF"/>
+</svg>

@@ -1,4 +1,5 @@
 import QtQuick
+import "./common"
 
 Item {
     id: root
@@ -20,6 +21,16 @@ Item {
         color:        "black"
         border.width: Math.round(2 * PS.scale)
         border.color: "#C0C0C0"
+    }
+
+    // 地点
+    LocationLabel {
+        visible:            false
+        anchors.top:        parent.top
+        anchors.left:       parent.left
+        anchors.topMargin:  Math.round(8 * PS.scale)
+        anchors.leftMargin: Math.round(8 * PS.scale)
+        cityName:           $weatherMgr.cityName
     }
 
     // 时间
