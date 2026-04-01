@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Window
-import "./qml"
+import "./qml/watchface"
 
 Window {
     id: root

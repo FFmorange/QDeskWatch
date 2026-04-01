@@ -11,7 +11,7 @@ QtObject {
             "symbol": "M",
             "icon": "memo_checklist",
             "accent": "#8FD3FF",
-            "source": "qrc:/qt/qml/QDeskWatch/qml/apps/MemoApp.qml",
+            "source": "qrc:/qt/qml/QDeskWatch/qml/apps/memo/MemoApp.qml",
             "keepAlive": true
         }
     ]
