@@ -5,18 +5,20 @@ import "./qml"
 Window {
     id: root
 
-    width:  Math.round(44 * 3 * PS.scale)
-    height: Math.round(49 * 3 * PS.scale)
+    width:  watchFace.implicitWidth
+    height: watchFace.implicitHeight
     visible: true
     flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
     color: "transparent"
 
     WatchFace {
+        id: watchFace
         anchors.centerIn: parent
         windowX: root.x
         windowY: root.y
 
         DragHandler {
+            enabled: AppShell.mode !== "launcher" || !watchFace.launcherIconPressed
             onActiveChanged: if (active) root.startSystemMove()
         }
     }

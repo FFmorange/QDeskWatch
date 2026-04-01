@@ -5,6 +5,8 @@ Item {
 
     property bool flipEnabled: true
 
+    readonly property real timeRowCenterY: timeRow.y + timeRow.height / 2
+
     function dateString(date) {
         var weekdays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"]
         return date.getDate() + " " + weekdays[date.getDay()]

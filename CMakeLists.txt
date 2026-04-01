@@ -43,6 +43,11 @@ set_source_files_properties("qml/singletons/Theme.qml"
         QT_QML_SINGLETON_TYPE TRUE
 )
 
+set_source_files_properties("qml/singletons/AppShell.qml"
+    PROPERTIES
+        QT_QML_SINGLETON_TYPE TRUE
+)
+
 if(WIN32)
     set(APP_ICON_ICO "${CMAKE_CURRENT_SOURCE_DIR}/resources/app-icon/qdeskwatch.ico")
     file(TO_NATIVE_PATH "${APP_ICON_ICO}" APP_ICON_ICO_NATIVE)
