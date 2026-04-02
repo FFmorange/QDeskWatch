@@ -7,7 +7,7 @@ QtObject {
     property var apps: [
         {
             "id": "memo",
-            "title": "Memo",
+            "title": "MemoList",
             "symbol": "M",
             "icon": "memo_checklist",
             "accent": "#8FD3FF",

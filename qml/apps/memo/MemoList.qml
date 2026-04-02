@@ -22,6 +22,16 @@ Item {
     property string _editMemoOrig: ""
     property var _editFieldItem: null
     property var _editCancelItem: null
+    readonly property bool _tooltipBlocked: addChooser.opened || addPanel.visible || spinner.visible
+    property bool _headerOverlayVisible: false
+    property string _headerOverlayGroupKey: ""
+    property string _headerOverlayText: ""
+    property bool _headerOverlayIsNote: false
+    property int _headerOverlayDay: -999
+    property real _headerOverlayX: 0
+    property real _headerOverlayY: 0
+    property real _headerOverlayWidth: 0
+    property real _headerOverlayHeight: 0
 
     // 用于驱动与时间相关的绑定刷新
     // Date.now() 不是可跟踪的 QML 属性，所以通过定时递增 _tick 来触发重算
@@ -35,11 +45,51 @@ Item {
         NumberAnimation { to: 1.0; duration: 380; easing.type: Easing.InOutSine }
     }
 
+    on_TooltipBlockedChanged: {
+        if (_tooltipBlocked)
+            ttip.hide()
+    }
+
+    function showHeaderOverlay(groupKey, title, isNote, day, item) {
+        if (!item)
+            return
+        var p = item.mapToItem(root, 0, 0)
+        root._headerOverlayGroupKey = groupKey
+        root._headerOverlayText = title
+        root._headerOverlayIsNote = isNote
+        root._headerOverlayDay = day
+        root._headerOverlayX = p.x
+        root._headerOverlayY = p.y
+        root._headerOverlayWidth = item.width
+        root._headerOverlayHeight = item.height
+        headerOverlayHideTimer.stop()
+        root._headerOverlayVisible = true
+    }
+
+    function hideHeaderOverlay() {
+        root._headerOverlayVisible = false
+        root._headerOverlayGroupKey = ""
+        root._headerOverlayText = ""
+    }
+
+    function hideHeaderOverlayLater() {
+        if (root._headerOverlayVisible)
+            headerOverlayHideTimer.restart()
+    }
+
     // 取当前时间的分钟精度，与 memoTime 对齐
     function nowMinute() {
         var n = new Date()
         n.setSeconds(0, 0)
         return n.getTime()
+    }
+
+    function entryType(entry) {
+        return entry && entry.entryType === "note" ? "note" : "scheduled"
+    }
+
+    function isNoteEntry(entry) {
+        return root.entryType(entry) === "note"
     }
 
     // 每 10 秒删除过期条目，并驱动颜色和闪烁状态刷新
@@ -49,7 +99,8 @@ Item {
             var now = root.nowMinute()
             var removed = false
             for (var i = memoModel.count - 1; i >= 0; i--) {
-                if (memoModel.get(i).memoTime < now) {
+                var entry = memoModel.get(i)
+                if (!root.isNoteEntry(entry) && entry.memoTime < now) {
                     memoModel.remove(i)
                     removed = true
                 }
@@ -122,35 +173,68 @@ Item {
         return (d.getMonth() + 1) + "/" + d.getDate()
     }
 
-    function hasDaySections(rev) {
-        void rev
+    function groupKeyForEntry(entry) {
+        if (root.isNoteEntry(entry))
+            return "note"
+        return "day:" + root.dayOffset(entry.memoTime)
+    }
+
+    function hasGroupEntries(groupKey) {
+        if (!groupKey)
+            return false
         for (var i = 0; i < memoModel.count; i++) {
-            if (root.dayOffset(memoModel.get(i).memoTime) !== 0)
+            if (root.groupKeyForEntry(memoModel.get(i)) === groupKey)
                 return true
         }
         return false
     }
 
+    function headerTitleForEntry(entry) {
+        return root.isNoteEntry(entry) ? "\u5907\u5fd8\u5f55" : root.dayHeaderTitle(entry.memoTime)
+    }
+
+    function hasSectionHeaders(rev) {
+        void rev
+        return memoModel.count > 0
+    }
+
     function listRowsHeight(rev) {
         void rev
         var total = 0
-        var showSections = root.hasDaySections(rev)
-        var prevDay = -999
+        var showSections = root.hasSectionHeaders(rev)
+        var prevGroupKey = ""
         for (var i = 0; i < memoModel.count; i++) {
-            var day = root.dayOffset(memoModel.get(i).memoTime)
-            if (showSections && day !== prevDay)
+            var groupKey = root.groupKeyForEntry(memoModel.get(i))
+            if (showSections && (i === 0 || groupKey !== prevGroupKey))
                 total += root._sectionH
             total += root._rowH
-            prevDay = day
+            prevGroupKey = groupKey
         }
         return total
     }
 
-    function sortByTime() {
+    function sortEntries() {
         var arr = []
-        for (var i = 0; i < memoModel.count; i++)
-            arr.push({ memoTime: memoModel.get(i).memoTime, memoText: memoModel.get(i).memoText })
-        arr.sort(function(a, b) { return a.memoTime - b.memoTime })
+        for (var i = 0; i < memoModel.count; i++) {
+            var entry = memoModel.get(i)
+            arr.push({
+                entryType: root.entryType(entry),
+                memoTime: entry.memoTime !== undefined ? entry.memoTime : -1,
+                memoText: entry.memoText,
+                createdAt: entry.createdAt !== undefined ? entry.createdAt : 0
+            })
+        }
+        arr.sort(function(a, b) {
+            var aNote = a.entryType === "note"
+            var bNote = b.entryType === "note"
+            if (aNote !== bNote)
+                return aNote ? -1 : 1
+            if (aNote && bNote)
+                return b.createdAt - a.createdAt
+            if (a.memoTime !== b.memoTime)
+                return a.memoTime - b.memoTime
+            return a.createdAt - b.createdAt
+        })
         memoModel.clear()
         for (var j = 0; j < arr.length; j++)
             memoModel.append(arr[j])
@@ -165,11 +249,20 @@ Item {
         else if (idx < root._editMemoIdx)
             root._editMemoIdx--
         memoModel.remove(idx)
+        if (root._headerOverlayVisible && !root.hasGroupEntries(root._headerOverlayGroupKey))
+            root.hideHeaderOverlay()
         root._sectionRev++
     }
 
     function memoEditValid() {
         return root._editMemoText.trim().length > 0
+    }
+
+    Timer {
+        id: headerOverlayHideTimer
+        interval: 240
+        repeat: false
+        onTriggered: root.hideHeaderOverlay()
     }
 
     function startMemoEdit(idx) {
@@ -273,8 +366,239 @@ Item {
             cursorShape:     Qt.PointingHandCursor
             onClicked: {
                 root.commitMemoEdit()
-                var n = new Date()
-                addPanel.openPanel(n.getHours(), n.getMinutes())
+                spinner.visible = false
+                addPanel.visible = false
+                addChooser.toggle()
+            }
+        }
+    }
+
+    MouseArea {
+        visible: addChooser.opened
+        z: 149
+        anchors.fill: parent
+        onClicked: addChooser.close()
+    }
+
+    Item {
+        id: addChooser
+        z: 150
+        anchors.horizontalCenter: addBtn.horizontalCenter
+        y: opened ? addBtn.y + addBtn.height + Math.round(3 * PS.scale)
+                  : addBtn.y + addBtn.height + Math.round(1 * PS.scale)
+        width: Math.round(74 * PS.scale)
+        height: opened ? chooserCard.implicitHeight : 0
+        clip: true
+        visible: opacity > 0 || height > 0
+        opacity: opened ? 1.0 : 0.0
+        scale: opened ? 1.0 : 0.94
+        transformOrigin: Item.Top
+
+        property bool opened: false
+
+        function open() {
+            opened = true
+        }
+
+        function close() {
+            opened = false
+        }
+
+        function toggle() {
+            opened = !opened
+        }
+
+        function choose(mode) {
+            var n = new Date()
+            close()
+            addPanel.openPanel(mode, n.getHours(), n.getMinutes())
+        }
+
+        Behavior on opacity {
+            NumberAnimation { duration: 170; easing.type: Easing.OutCubic }
+        }
+
+        Behavior on height {
+            NumberAnimation { duration: 190; easing.type: Easing.OutCubic }
+        }
+
+        Behavior on scale {
+            NumberAnimation { duration: 170; easing.type: Easing.OutCubic }
+        }
+
+        Behavior on y {
+            NumberAnimation { duration: 190; easing.type: Easing.OutCubic }
+        }
+
+        Rectangle {
+            id: chooserCard
+            width: parent.width
+            height: implicitHeight
+            implicitHeight: Math.round(34 * PS.scale)
+            radius: Math.round(8 * PS.scale)
+            color: Qt.rgba(0.08, 0.08, 0.08, 0.94)
+            border.color: Qt.rgba(1, 1, 1, 0.15)
+            border.width: 1
+
+            Rectangle {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                height: Math.round(11 * PS.scale)
+                radius: chooserCard.radius
+                color: Qt.rgba(1, 1, 1, 0.035)
+                opacity: 0.9
+            }
+
+            Row {
+                anchors.centerIn: parent
+                spacing: Math.round(7 * PS.scale)
+
+                Item {
+                    id: noteOption
+                    width: Math.round(23 * PS.scale)
+                    height: Math.round(24 * PS.scale)
+
+                    readonly property bool hovered: noteOptionMa.containsMouse
+                    readonly property bool pressed: noteOptionMa.pressed
+
+                    Item {
+                        id: noteMotion
+                        width: Math.round(15 * PS.scale)
+                        height: width
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        y: noteOption.pressed ? Math.round(0.7 * PS.scale) : 0
+                        scale: noteOption.pressed ? 0.9 : noteOption.hovered ? 1.1 : 0.96
+                        opacity: noteOption.pressed ? 0.94 : noteOption.hovered ? 1.0 : 0.78
+
+                        Behavior on y {
+                            NumberAnimation { duration: 90; easing.type: Easing.OutCubic }
+                        }
+
+                        Behavior on scale {
+                            NumberAnimation { duration: 130; easing.type: Easing.OutCubic }
+                        }
+
+                        Behavior on opacity {
+                            NumberAnimation { duration: 110; easing.type: Easing.OutCubic }
+                        }
+
+                        Image {
+                            anchors.fill: parent
+                            source: Theme.icon("memo_note")
+                            fillMode: Image.PreserveAspectFit
+                            smooth: true
+                            mipmap: true
+                            cache: true
+                            sourceSize.width: Math.round(width * 4)
+                            sourceSize.height: Math.round(height * 4)
+                        }
+                    }
+
+                    Text {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.bottom: parent.bottom
+                        text: "\u5907\u5fd8\u5f55"
+                        color: "white"
+                        opacity: 0.92
+                        font.pixelSize: Math.round(3.7 * PS.scale)
+                        font.bold: true
+                    }
+
+                    MouseArea {
+                        id: noteOptionMa
+                        anchors.fill: parent
+                        anchors.margins: -Math.round(2 * PS.scale)
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: addChooser.choose("note")
+                    }
+                }
+
+                Item {
+                    width: 1
+                    height: Math.round(24 * PS.scale)
+
+                    Rectangle {
+                        anchors.centerIn: parent
+                        width: 1
+                        height: Math.round(18 * PS.scale)
+                        color: Qt.rgba(1, 1, 1, 0.08)
+                    }
+                }
+
+                Item {
+                    id: timedOption
+                    width: Math.round(23 * PS.scale)
+                    height: Math.round(24 * PS.scale)
+
+                    readonly property bool hovered: timedOptionMa.containsMouse
+                    readonly property bool pressed: timedOptionMa.pressed
+
+                    Item {
+                        id: timedMotion
+                        width: Math.round(15 * PS.scale)
+                        height: width
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        y: timedOption.pressed ? Math.round(0.7 * PS.scale) : 0
+                        scale: timedOption.pressed ? 0.9 : timedOption.hovered ? 1.1 : 0.96
+                        opacity: timedOption.pressed ? 0.94 : timedOption.hovered ? 1.0 : 0.78
+
+                        Behavior on y {
+                            NumberAnimation { duration: 90; easing.type: Easing.OutCubic }
+                        }
+
+                        Behavior on scale {
+                            NumberAnimation { duration: 130; easing.type: Easing.OutCubic }
+                        }
+
+                        Behavior on opacity {
+                            NumberAnimation { duration: 110; easing.type: Easing.OutCubic }
+                        }
+
+                        Image {
+                            anchors.fill: parent
+                            source: Theme.icon("memo_alarm")
+                            fillMode: Image.PreserveAspectFit
+                            smooth: true
+                            mipmap: true
+                            cache: true
+                            sourceSize.width: Math.round(width * 4)
+                            sourceSize.height: Math.round(height * 4)
+                        }
+                    }
+
+                    Text {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.bottom: parent.bottom
+                        text: "\u5b9a\u65f6\u63d0\u9192"
+                        color: "white"
+                        opacity: 0.92
+                        font.pixelSize: Math.round(3.4 * PS.scale)
+                        font.bold: true
+                    }
+
+                    MouseArea {
+                        id: timedOptionMa
+                        anchors.fill: parent
+                        anchors.margins: -Math.round(2 * PS.scale)
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: addChooser.choose("scheduled")
+                    }
+                }
+            }
+
+            Rectangle {
+                width: Math.round(7 * PS.scale)
+                height: Math.round(2 * PS.scale)
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.top: parent.top
+                anchors.topMargin: Math.round(3 * PS.scale)
+                radius: height / 2
+                color: Qt.rgba(1, 1, 1, 0.12)
+                border.width: 1
+                border.color: "transparent"
             }
         }
     }
@@ -299,12 +623,20 @@ Item {
             width:   parent.width
             spacing: 0
 
+            move: Transition {
+                NumberAnimation {
+                    properties: "y"
+                    duration: 220
+                    easing.type: Easing.OutCubic
+                }
+            }
+
             // 空状态
             Text {
                 visible: memoModel.count === 0
                 width:   parent.width
                 height:  listFlick.height
-                text:    "暂无备忘"
+                text:    "记下一件事吧"
                 color:   Qt.rgba(1, 1, 1, 0.18)
                 font.pixelSize: Math.round(4.5 * PS.scale)
                 horizontalAlignment: Text.AlignHCenter
@@ -316,24 +648,96 @@ Item {
                 delegate: Item {
                     id: memoRow
 
-                    readonly property bool _blink: root.shouldBlink(model.memoTime, root._tick)
-                    readonly property bool _showSections: root.hasDaySections(root._sectionRev)
-                    readonly property int _day: root.dayOffset(model.memoTime)
-                    readonly property int _prevDay: model.index > 0 ? root.dayOffset(memoModel.get(model.index - 1).memoTime) : -999
-                    readonly property bool _showHeader: _showSections && (model.index === 0 || _day !== _prevDay)
+                    readonly property bool _isNote: root.isNoteEntry(model)
+                    readonly property bool _blink: !memoRow._isNote && root.shouldBlink(model.memoTime, root._tick)
+                    readonly property bool _showSections: root.hasSectionHeaders(root._sectionRev)
+                    readonly property int _day: memoRow._isNote ? -999 : root.dayOffset(model.memoTime)
+                    readonly property string _groupKey: root.groupKeyForEntry(model)
+                    readonly property string _prevGroupKey: model.index > 0 ? root.groupKeyForEntry(memoModel.get(model.index - 1)) : ""
+                    readonly property string _nextGroupKey: model.index < memoModel.count - 1 ? root.groupKeyForEntry(memoModel.get(model.index + 1)) : ""
+                    readonly property bool _showHeader: _showSections && (model.index === 0 || _groupKey !== _prevGroupKey)
+                    readonly property bool _preserveHeaderOnRemove: memoRow._showHeader && memoRow._nextGroupKey === memoRow._groupKey
+                    readonly property bool _inlineHeaderSuppressed: root._headerOverlayVisible && memoRow._groupKey === root._headerOverlayGroupKey
                     readonly property bool _editing: root._editMemoIdx === model.index
+                    readonly property real _fullHeight: root._rowH + (memoRow._showHeader ? root._sectionH : 0)
+                    property real _animatedHeight: _fullHeight
+                    property real _removeOffset: 0
+                    property real _removeOpacity: 1.0
+                    property bool _removing: false
 
                     width:  parent.width
-                    height: _rowH + (_showHeader ? _sectionH : 0)
+                    height: _animatedHeight
+                    clip: true
+
+                    on_FullHeightChanged: {
+                        if (!memoRow._removing)
+                            memoRow._animatedHeight = memoRow._fullHeight
+                    }
+
+                    function startRemove() {
+                        if (memoRow._removing)
+                            return
+                        memoRow._removing = true
+                        root.commitMemoEdit()
+                        ttip.hide()
+                        if (memoRow._preserveHeaderOnRemove)
+                            root.showHeaderOverlay(memoRow._groupKey, root.headerTitleForEntry(model), memoRow._isNote, memoRow._day, headerItem)
+                        else
+                            root.hideHeaderOverlay()
+                        removeAnim.restart()
+                    }
+
+                    ParallelAnimation {
+                        id: removeAnim
+
+                        NumberAnimation {
+                            target: memoRow
+                            property: "_removeOffset"
+                            to: Math.round(14 * PS.scale)
+                            duration: 210
+                            easing.type: Easing.OutCubic
+                        }
+
+                        NumberAnimation {
+                            target: memoRow
+                            property: "_removeOpacity"
+                            to: 0.0
+                            duration: 170
+                            easing.type: Easing.OutCubic
+                        }
+
+                        NumberAnimation {
+                            target: memoRow
+                            property: "_animatedHeight"
+                            to: memoRow._preserveHeaderOnRemove ? root._sectionH : 0
+                            duration: 220
+                            easing.type: Easing.InOutCubic
+                        }
+
+                        onStopped: {
+                            if (memoRow._removing) {
+                                root.removeMemo(model.index)
+                                if (memoRow._preserveHeaderOnRemove)
+                                    root.hideHeaderOverlayLater()
+                            }
+                        }
+                    }
 
                     // 行级 hover 检测，不消耗事件
-                    HoverHandler { id: rowHover }
+                    HoverHandler {
+                        id: rowHover
+                        enabled: !memoRow._removing
+                    }
 
                     Item {
                         id: headerItem
-                        visible: memoRow._showHeader
+                        visible: memoRow._showHeader && !memoRow._inlineHeaderSuppressed
                         width: parent.width
                         height: memoRow._showHeader ? root._sectionH : 0
+                        opacity: memoRow._preserveHeaderOnRemove ? 1.0 : memoRow._removeOpacity
+                        transform: Translate {
+                            x: memoRow._preserveHeaderOnRemove ? 0 : memoRow._removeOffset
+                        }
 
                         Rectangle {
                             anchors.verticalCenter: parent.verticalCenter
@@ -349,17 +753,20 @@ Item {
                             width: headerLabel.implicitWidth + Math.round(8 * PS.scale)
                             height: Math.max(Math.round(5 * PS.scale), headerLabel.implicitHeight + Math.round(1 * PS.scale))
                             radius: height / 2
-                            color: memoRow._day === 0 ? Qt.rgba(0.32, 0.92, 0.72, 0.12)
+                            color: memoRow._isNote ? Qt.rgba(1, 1, 1, 0.08)
+                                                   : memoRow._day === 0 ? Qt.rgba(0.32, 0.92, 0.72, 0.12)
                                                       : Qt.rgba(0.40, 0.67, 1.0, 0.13)
-                            border.color: memoRow._day === 0 ? Qt.rgba(0.42, 0.95, 0.78, 0.22)
-                                                             : Qt.rgba(0.55, 0.77, 1.0, 0.24)
+                            border.color: memoRow._isNote ? Qt.rgba(1, 1, 1, 0.16)
+                                                          : memoRow._day === 0 ? Qt.rgba(0.42, 0.95, 0.78, 0.22)
+                                                              : Qt.rgba(0.55, 0.77, 1.0, 0.24)
                             border.width: 1
 
                             Text {
                                 id: headerLabel
                                 anchors.centerIn: parent
-                                text: root.dayHeaderTitle(model.memoTime)
-                                color: memoRow._day === 0 ? Qt.rgba(0.74, 1, 0.89, 0.92)
+                                text: root.headerTitleForEntry(model)
+                                color: memoRow._isNote ? Qt.rgba(1, 1, 1, 0.88)
+                                                       : memoRow._day === 0 ? Qt.rgba(0.74, 1, 0.89, 0.92)
                                                           : Qt.rgba(0.78, 0.88, 1, 0.92)
                                 font.pixelSize: Math.round(3.6 * PS.scale)
                                 font.bold: true
@@ -380,6 +787,8 @@ Item {
                         y: memoRow._showHeader ? root._sectionH : 0
                         width: parent.width
                         height: root._rowH
+                        opacity: memoRow._removeOpacity
+                        transform: Translate { x: memoRow._removeOffset }
 
                         // 分隔线
                         Rectangle {
@@ -392,9 +801,10 @@ Item {
                         // 时间，点击后弹出编辑面板
                         Item {
                             id: timeItem
+                            visible: !memoRow._isNote
                             anchors.left:           parent.left
                             anchors.verticalCenter: parent.verticalCenter
-                            width:  _timeW
+                            width:  memoRow._isNote ? 0 : _timeW
                             height: parent.height
 
                             Text {
@@ -411,6 +821,7 @@ Item {
                                 id: timeMa
                                 anchors.fill: parent
                                 hoverEnabled: true
+                                enabled: !memoRow._isNote && !memoRow._removing
                                 onClicked: {
                                     root.commitMemoEdit()
                                     var d = new Date(model.memoTime)
@@ -442,7 +853,9 @@ Item {
                                     verticalCenter: parent.verticalCenter
                                 }
                                 text:           model.memoText
-                                color:          root.entryDisplayColor(model.memoTime, memoMa.containsMouse, root._tick)
+                                color:          memoRow._isNote
+                                                ? (memoMa.containsMouse ? Qt.rgba(1, 1, 1, 0.98) : Qt.rgba(1, 1, 1, 0.82))
+                                                : root.entryDisplayColor(model.memoTime, memoMa.containsMouse, root._tick)
                                 opacity:        memoRow._blink ? root._blinkOpacity : 1.0
                                 font.pixelSize: Math.round(5.5 * PS.scale)
                                 font.bold:      true
@@ -509,9 +922,9 @@ Item {
                                 id: memoMa
                                 anchors.fill: parent
                                 hoverEnabled: true
-                                enabled: !memoRow._editing
+                                enabled: !memoRow._editing && !memoRow._removing && !root._tooltipBlocked
                                 onEntered: {
-                                    if (memoText.truncated) {
+                                    if (!root._tooltipBlocked && memoText.truncated) {
                                         var pos = memoText.mapToItem(root, 0, memoText.height + Math.round(2 * PS.scale))
                                         ttip.show(model.memoText, pos.x, pos.y)
                                     }
@@ -553,7 +966,7 @@ Item {
                         // 删除按钮，仅在 hover 时显示
                         Text {
                             id: delBtn
-                            visible: rowHover.hovered && !memoRow._editing
+                            visible: rowHover.hovered && !memoRow._editing && !memoRow._removing
                             anchors {
                                 right:          parent.right
                                 verticalCenter: parent.verticalCenter
@@ -570,8 +983,7 @@ Item {
                                 anchors.margins: -Math.round(1 * PS.scale)
                                 hoverEnabled:    true
                                 onClicked: {
-                                    root.commitMemoEdit()
-                                    root.removeMemo(model.index)
+                                    memoRow.startRemove()
                                 }
                             }
                         }
@@ -648,6 +1060,7 @@ Item {
             _origMin = m
             root.commitMemoEdit()
             spinnerTime.setTime(h, m)
+            addChooser.close()
             addPanel.visible = false
             visible = true
         }
@@ -664,7 +1077,7 @@ Item {
             if (_idx >= 0 && _idx < memoModel.count) {
                 var d = root.nextMemoDate(spinnerTime.hour, spinnerTime.minute)
                 memoModel.setProperty(_idx, "memoTime", d.getTime())
-                sortByTime()
+                sortEntries()
             }
             visible = false
         }
@@ -736,16 +1149,24 @@ Item {
         z:       200
 
         readonly property real _margin: Math.round(6 * PS.scale)
+        property string entryType: "scheduled"
+        readonly property bool noteMode: entryType === "note"
 
         width:  Math.round(86 * PS.scale)
         height: addPanelCol.implicitHeight + _margin * 2
         anchors.centerIn: parent
 
-        function openPanel(h, m) {
-            var next = m + (5 - m % 5)
+        function openPanel(mode, h, m) {
             root.commitMemoEdit()
-            addTime.setTime((h + Math.floor(next / 60)) % 24, next % 60)
+            entryType = mode || "scheduled"
+            if (!noteMode) {
+                var next = m + (5 - m % 5)
+                addTime.setTime((h + Math.floor(next / 60)) % 24, next % 60)
+            } else {
+                addTime.clearSelection()
+            }
             addContent.text = ""
+            addChooser.close()
             spinner.visible = false
             visible = true
             addContent.forceActiveFocus()
@@ -754,11 +1175,26 @@ Item {
         function doAdd() {
             var content = addContent.text.trim()
             if (content === "") return
-            if (addTime.invalid) return
-            addTime.clearSelection()
-            var t = root.nextMemoDate(addTime.hour, addTime.minute)
-            memoModel.append({ memoTime: t.getTime(), memoText: content })
-            sortByTime()
+            var createdAt = Date.now()
+            if (noteMode) {
+                memoModel.append({
+                    entryType: "note",
+                    memoTime: -1,
+                    memoText: content,
+                    createdAt: createdAt
+                })
+            } else {
+                if (addTime.invalid) return
+                addTime.clearSelection()
+                var t = root.nextMemoDate(addTime.hour, addTime.minute)
+                memoModel.append({
+                    entryType: "scheduled",
+                    memoTime: t.getTime(),
+                    memoText: content,
+                    createdAt: createdAt
+                })
+            }
+            sortEntries()
             addContent.focus = false
             visible = false
         }
@@ -816,12 +1252,12 @@ Item {
                     selectByMouse:  true
                     Keys.onReturnPressed: { if (addPanel.visible) addPanel.doAdd() }
                     Keys.onEnterPressed: { if (addPanel.visible) addPanel.doAdd() }
-                    onActiveFocusChanged: if (activeFocus) addTime.clearSelection()
+                    onActiveFocusChanged: if (activeFocus && !addPanel.noteMode) addTime.clearSelection()
 
                     Text {
                         anchors.fill:           parent
                         verticalAlignment:      Text.AlignVCenter
-                        text:    "备忘内容..."
+                        text:    addPanel.noteMode ? "备忘内容..." : "提醒内容..."
                         color:   Qt.rgba(1, 1, 1, 0.2)
                         font:    addContent.font
                         visible: addContent.text.length === 0 && !addContent.activeFocus
@@ -863,6 +1299,7 @@ Item {
 
             TimeEntryControl {
                 id: addTime
+                visible: !addPanel.noteMode
                 anchors.horizontalCenter: parent.horizontalCenter
                 scale: PS.scale
                 onSubmitRequested: addPanel.doAdd()
@@ -897,6 +1334,56 @@ Item {
             anchors.centerIn: parent
             color:          Qt.rgba(1, 1, 1, 0.9)
             font.pixelSize: Math.round(4.5 * PS.scale)
+        }
+    }
+
+    Item {
+        visible: root._headerOverlayVisible
+        z: 380
+        x: root._headerOverlayX
+        y: root._headerOverlayY
+        width: root._headerOverlayWidth
+        height: root._headerOverlayHeight
+
+        Rectangle {
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.left: parent.left
+            width: Math.max(0, (parent.width - overlayHeaderLabel.implicitWidth - Math.round(10 * PS.scale)) / 2)
+            height: 1
+            color: Qt.rgba(1, 1, 1, 0.08)
+        }
+
+        Rectangle {
+            anchors.centerIn: parent
+            width: overlayHeaderLabel.implicitWidth + Math.round(8 * PS.scale)
+            height: Math.max(Math.round(5 * PS.scale), overlayHeaderLabel.implicitHeight + Math.round(1 * PS.scale))
+            radius: height / 2
+            color: root._headerOverlayIsNote ? Qt.rgba(1, 1, 1, 0.08)
+                                             : root._headerOverlayDay === 0 ? Qt.rgba(0.32, 0.92, 0.72, 0.12)
+                                                 : Qt.rgba(0.40, 0.67, 1.0, 0.13)
+            border.color: root._headerOverlayIsNote ? Qt.rgba(1, 1, 1, 0.16)
+                                                    : root._headerOverlayDay === 0 ? Qt.rgba(0.42, 0.95, 0.78, 0.22)
+                                                        : Qt.rgba(0.55, 0.77, 1.0, 0.24)
+            border.width: 1
+
+            Text {
+                id: overlayHeaderLabel
+                anchors.centerIn: parent
+                text: root._headerOverlayText
+                color: root._headerOverlayIsNote ? Qt.rgba(1, 1, 1, 0.88)
+                                                 : root._headerOverlayDay === 0 ? Qt.rgba(0.74, 1, 0.89, 0.92)
+                                                     : Qt.rgba(0.78, 0.88, 1, 0.92)
+                font.pixelSize: Math.round(3.6 * PS.scale)
+                font.bold: true
+            }
+        }
+
+        Rectangle {
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.right: parent.right
+            width: Math.max(0, (parent.width - overlayHeaderLabel.implicitWidth - Math.round(10 * PS.scale)) / 2)
+            height: 1
+            color: Qt.rgba(1, 1, 1, 0.08)
         }
     }
 }

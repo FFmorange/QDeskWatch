@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <path
+    d="M8.05 6.35 6.15 4.6"
+    fill="none"
+    stroke="#f5f7fa"
+    stroke-width="1.55"
+    stroke-linecap="round"
+  />
+  <path
+    d="M15.95 6.35 17.85 4.6"
+    fill="none"
+    stroke="#f5f7fa"
+    stroke-width="1.55"
+    stroke-linecap="round"
+  />
+  <path
+    d="M9.15 19.15 7.85 20.9"
+    fill="none"
+    stroke="#f5f7fa"
+    stroke-width="1.55"
+    stroke-linecap="round"
+  />
+  <path
+    d="M14.85 19.15 16.15 20.9"
+    fill="none"
+    stroke="#f5f7fa"
+    stroke-width="1.55"
+    stroke-linecap="round"
+  />
+  <circle
+    cx="12"
+    cy="12.3"
+    r="6.7"
+    fill="#ffffff"
+    fill-opacity="0.04"
+    stroke="#f5f7fa"
+    stroke-width="1.6"
+  />
+  <path
+    d="M12 9.15v3.4l2.45 1.65"
+    fill="none"
+    stroke="#8FD3FF"
+    stroke-width="1.8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <circle cx="12" cy="12.3" r="0.95" fill="#8FD3FF" />
+</svg>
