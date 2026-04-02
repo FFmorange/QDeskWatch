@@ -99,9 +99,7 @@ QtObject {
     }
 
     function crownPressed() {
-        if (root.mode === "launcher")
-            root.openSelectedApp()
-        else
+        if (root.mode !== "launcher")
             root.showLauncher()
     }
 
