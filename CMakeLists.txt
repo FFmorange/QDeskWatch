@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+﻿cmake_minimum_required(VERSION 3.16)
 
 project(QDeskWatch VERSION 1.1.0 LANGUAGES CXX)
 
@@ -10,6 +10,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt6 REQUIRED COMPONENTS Quick Core Network Widgets)
 
 qt_standard_project_setup(REQUIRES 6.8)
+include(GNUInstallDirs)
 
 file(GLOB_RECURSE APP_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
@@ -108,6 +109,7 @@ if(WIN32)
 endif()
 
 set(MARKET_PLUGIN_PRIVATE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/private-modules/market-plugin")
+set(MARKET_PLUGIN_INSTALL_DIR "${CMAKE_INSTALL_BINDIR}/plugins/market")
 
 if(EXISTS "${MARKET_PLUGIN_PRIVATE_DIR}/CMakeLists.txt")
     add_subdirectory("${MARKET_PLUGIN_PRIVATE_DIR}"
@@ -126,12 +128,11 @@ elseif(WIN32)
         )
 
         install(FILES "${MARKET_PLUGIN_PUBLIC_FILE}"
-            DESTINATION plugins/market
+            DESTINATION "${MARKET_PLUGIN_INSTALL_DIR}"
         )
     endif()
 endif()
 
-include(GNUInstallDirs)
 install(TARGETS QDeskWatch
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

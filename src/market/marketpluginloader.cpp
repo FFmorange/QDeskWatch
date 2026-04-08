@@ -1,5 +1,6 @@
-#include "marketpluginloader.h"
+﻿#include "marketpluginloader.h"
 
+#include <QByteArray>
 #include <QCoreApplication>
 #include <QDir>
 #include <QFileInfo>
@@ -18,6 +19,8 @@ QStringList candidatePluginPaths()
 {
     const QDir appDir(QCoreApplication::applicationDirPath());
     QStringList paths;
+    paths << QDir::cleanPath(appDir.filePath(QStringLiteral("../plugins/market/")
+                                             + QString::fromLatin1(MarketPluginContract::FileName)));
     paths << appDir.filePath(QStringLiteral("plugins/market/")
                              + QString::fromLatin1(MarketPluginContract::FileName));
     paths << appDir.filePath(QString::fromLatin1(MarketPluginContract::FileName));
