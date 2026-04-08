@@ -107,6 +107,30 @@ if(WIN32)
     target_link_libraries(QDeskWatch PRIVATE dbghelp)
 endif()
 
+set(MARKET_PLUGIN_PRIVATE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/private-modules/market-plugin")
+
+if(EXISTS "${MARKET_PLUGIN_PRIVATE_DIR}/CMakeLists.txt")
+    add_subdirectory("${MARKET_PLUGIN_PRIVATE_DIR}"
+                     "${CMAKE_CURRENT_BINARY_DIR}/private-modules/market-plugin")
+elseif(WIN32)
+    set(MARKET_PLUGIN_PUBLIC_FILE
+        "${CMAKE_CURRENT_SOURCE_DIR}/plugins/market/QDeskWatchMarket.dll")
+
+    if(EXISTS "${MARKET_PLUGIN_PUBLIC_FILE}")
+        add_custom_command(TARGET QDeskWatch POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory
+                    "$<TARGET_FILE_DIR:QDeskWatch>/plugins/market"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${MARKET_PLUGIN_PUBLIC_FILE}"
+                    "$<TARGET_FILE_DIR:QDeskWatch>/plugins/market/QDeskWatchMarket.dll"
+        )
+
+        install(FILES "${MARKET_PLUGIN_PUBLIC_FILE}"
+            DESTINATION plugins/market
+        )
+    endif()
+endif()
+
 include(GNUInstallDirs)
 install(TARGETS QDeskWatch
     BUNDLE DESTINATION .

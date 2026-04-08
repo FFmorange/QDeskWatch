@@ -11,10 +11,12 @@
 #include "dumpcatcher.h"
 #include "globalmousetracker.h"
 #include "logger.h"
+#include "market/marketpluginloader.h"
 #include "manager/weathermanager.h"
 
-static bool contextPropertys(QQmlApplicationEngine &engine)
+static bool contextPropertys(QQmlApplicationEngine &engine, QObject *marketService)
 {
+    engine.rootContext()->setContextProperty("$marketMgr",  marketService);
     engine.rootContext()->setContextProperty("$weatherMgr", WeatherManager::instance());
     engine.rootContext()->setContextProperty("$mouseMgr",   GlobalMouseTracker::instance());
     return true;
@@ -48,13 +50,14 @@ int main(int argc, char *argv[])
     qCInfo(log) << "Application starting";
 
     QQmlApplicationEngine engine;
+    QObject *marketService = MarketPluginLoader::instance().service(&app);
     QObject::connect(
         &engine,
         &QQmlApplicationEngine::objectCreationFailed,
         &app,
         []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection);
-    contextPropertys(engine);
+    contextPropertys(engine, marketService);
     engine.loadFromModule(APP_QML_URI, "Main");
 
     if (engine.rootObjects().isEmpty())

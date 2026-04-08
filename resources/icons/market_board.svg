@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <rect
+    x="4.35"
+    y="4.35"
+    width="15.3"
+    height="15.3"
+    rx="3.4"
+    fill="#ffffff"
+    fill-opacity="0.04"
+    stroke="#f5f7fa"
+    stroke-width="1.6"
+  />
+  <path
+    d="M7.55 15.6h8.9"
+    fill="none"
+    stroke="#f5f7fa"
+    stroke-opacity="0.82"
+    stroke-width="1.45"
+    stroke-linecap="round"
+  />
+  <path
+    d="M7.55 12.2h2"
+    fill="none"
+    stroke="#f5f7fa"
+    stroke-opacity="0.62"
+    stroke-width="1.35"
+    stroke-linecap="round"
+  />
+  <path
+    d="M7.55 9.1h1.15"
+    fill="none"
+    stroke="#f5f7fa"
+    stroke-opacity="0.52"
+    stroke-width="1.35"
+    stroke-linecap="round"
+  />
+  <path
+    d="M7.7 14.45 10.25 11.85 12.2 12.95 16.3 8.85"
+    fill="none"
+    stroke="#f2c66c"
+    stroke-width="1.9"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M14.35 8.85h1.95v1.95"
+    fill="none"
+    stroke="#f2c66c"
+    stroke-width="1.7"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

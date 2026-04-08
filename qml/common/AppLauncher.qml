@@ -125,10 +125,7 @@ Item {
                     }
 
                     onTapped: {
-                        if (AppShell.selectedAppId === tileRoot.appDef.id)
-                            AppShell.openApp(tileRoot.appDef.id)
-                        else
-                            AppShell.selectApp(tileRoot.appDef.id)
+                        AppShell.openApp(tileRoot.appDef.id)
                     }
                 }
             }

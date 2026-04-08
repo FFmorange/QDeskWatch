@@ -6,6 +6,12 @@ install/
 cmake-build-*/
 bin/
 plugins/
+!plugins/
+plugins/*
+!plugins/market/
+plugins/market/*
+!plugins/market/.gitkeep
+!plugins/market/QDeskWatchMarket.dll
 
 # CMake generated files
 CMakeFiles/
@@ -27,6 +33,7 @@ CTestTestfile.cmake
 *.a
 *.lib
 *.dll
+!plugins/market/QDeskWatchMarket.dll
 *.exe
 *.pdb
 *.ilk
@@ -41,3 +48,6 @@ qmldir
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Local private modules
+/private-modules/

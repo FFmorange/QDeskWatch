@@ -13,6 +13,15 @@ QtObject {
             "accent": "#8FD3FF",
             "source": "qrc:/qt/qml/QDeskWatch/qml/apps/memo/MemoApp.qml",
             "keepAlive": true
+        },
+        {
+            "id": "market",
+            "title": "Market",
+            "symbol": "K",
+            "icon": "market_board",
+            "accent": "#F2C66C",
+            "source": "qrc:/qt/qml/QDeskWatch/qml/apps/market/MarketApp.qml",
+            "keepAlive": true
         }
     ]
 
