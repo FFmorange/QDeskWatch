@@ -1,0 +1,4 @@
+interface:
+  display_name: "项目文件检索"
+  short_description: "先读项目结构文档，再定位仓库中的实际文件与改动落点"
+  default_prompt: "Use $project-file-search to locate the right files in this repository before editing."

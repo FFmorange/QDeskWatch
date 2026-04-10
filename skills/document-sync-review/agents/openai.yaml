@@ -1,0 +1,4 @@
+interface:
+  display_name: "文档同步审查"
+  short_description: "先比对仓库与项目文档，再整理差异并在修改前征求用户确认"
+  default_prompt: "Use $document-sync-review to compare repository state with project docs and ask before applying doc updates."

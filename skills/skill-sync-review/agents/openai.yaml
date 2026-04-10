@@ -1,0 +1,4 @@
+interface:
+  display_name: "Skill 同步审查"
+  short_description: "先判断 skill 是否真该更新，再分析触发、流程、资源与边界问题"
+  default_prompt: "Use $skill-sync-review to decide whether a project skill truly needs updating before editing it."
