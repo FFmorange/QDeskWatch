@@ -4,7 +4,7 @@
 
 namespace MarketPluginContract {
 
-inline constexpr char AbiVersion[] = "QDeskWatch.Market/1.0";
+inline constexpr char AbiVersion[] = "QDeskWatch.Market/1.1";
 inline constexpr char AbiFunctionName[] = "qdwMarketPluginAbi";
 inline constexpr char CreateFunctionName[] = "qdwCreateMarketService";
 

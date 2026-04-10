@@ -1,6 +1,7 @@
 #include "marketstub.h"
 
 #include <QDateTime>
+#include <QVariantList>
 
 MarketStub::MarketStub(QObject *parent) : MarketServiceBase(parent)
 {
@@ -20,6 +21,9 @@ void MarketStub::refresh()
     set_sseChangePct(0.0);
     set_sseUpdatedAt({});
     set_sseStatus(QStringLiteral("invalid"));
+    set_sseChartAvailable(false);
+    set_sseChartPoints(QVariantList{});
+    set_sseChartUpdatedAt({});
 
     set_goldAvailable(false);
     set_goldName(QStringLiteral("国内金价"));
@@ -28,4 +32,7 @@ void MarketStub::refresh()
     set_goldChangePct(0.0);
     set_goldUpdatedAt({});
     set_goldStatus(QStringLiteral("invalid"));
+    set_goldChartAvailable(false);
+    set_goldChartPoints(QVariantList{});
+    set_goldChartUpdatedAt({});
 }

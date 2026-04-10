@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QVariantList>
 
 #include "definevaluehelper.h"
 
@@ -20,6 +21,9 @@ class MarketServiceBase : public QObject
     DEFINE_VALUE(double,  sseChangePct, 0.0)
     DEFINE_VALUE(QString, sseUpdatedAt, {})
     DEFINE_VALUE(QString, sseStatus,    {})
+    DEFINE_VALUE(bool,    sseChartAvailable, false)
+    DEFINE_VALUE(QVariantList, sseChartPoints, {})
+    DEFINE_VALUE(QString, sseChartUpdatedAt, {})
 
     DEFINE_VALUE(bool,    goldAvailable, false)
     DEFINE_VALUE(QString, goldName,      {})
@@ -28,6 +32,9 @@ class MarketServiceBase : public QObject
     DEFINE_VALUE(double,  goldChangePct, 0.0)
     DEFINE_VALUE(QString, goldUpdatedAt, {})
     DEFINE_VALUE(QString, goldStatus,    {})
+    DEFINE_VALUE(bool,    goldChartAvailable, false)
+    DEFINE_VALUE(QVariantList, goldChartPoints, {})
+    DEFINE_VALUE(QString, goldChartUpdatedAt, {})
 
 public:
     explicit MarketServiceBase(QObject *parent = nullptr) : QObject(parent) {}
