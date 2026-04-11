@@ -22,6 +22,15 @@ QtObject {
             "accent": "#F2C66C",
             "source": "qrc:/qt/qml/QDeskWatch/qml/apps/market/MarketApp.qml",
             "keepAlive": true
+        },
+        {
+            "id": "calculator",
+            "title": "Calc",
+            "symbol": "C",
+            "icon": "calculator",
+            "accent": "#C9E18D",
+            "source": "qrc:/qt/qml/QDeskWatch/qml/apps/calculator/CalculatorApp.qml",
+            "keepAlive": true
         }
     ]
 
