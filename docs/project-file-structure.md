@@ -45,6 +45,9 @@ QDeskWatch/
 |           `-- marketpluginentry.cpp      # 插件导出入口，暴露 ABI 与 service 创建函数
 |-- qml/
 |   |-- apps/
+|   |   |-- calculator/
+|   |   |   |-- CalcButton.qml             # 计算器按键组件，统一按钮视觉、悬停和按压反馈
+|   |   |   `-- CalculatorApp.qml          # 计算器应用主界面，支持基础四则运算、小数、正负号与键盘输入
 |   |   |-- market/
 |   |   |   |-- MarketApp.qml              # 行情应用主视图，负责列表页和详情页切换
 |   |   |   |-- MarketDetailView.qml       # 单个资产详情页，展示价格、涨跌和日内走势
@@ -56,10 +59,10 @@ QDeskWatch/
 |   |       |-- MoodPicker.qml             # 心情 GIF 选择器组件
 |   |       `-- TimeEntryControl.qml       # 时间输入控件，支持键盘/滚轮选择提醒时间
 |   |-- common/
-|   |   |-- AppHost.qml                    # 应用容器，按 AppShell 状态加载 launcher 或具体 app
+|   |   |-- AppHost.qml                    # 应用容器，按 AppShell 状态加载 launcher 或具体 app，并缓存 keepAlive 应用实例
 |   |   |-- AppLauncher.qml                # 启动器网格，负责应用入口图标和交互动画
 |   |   |-- BreathLight.qml                # Canvas 版呼吸灯边框，距离提示实验组件
-|   |   |-- CrownButton.qml                # 表冠按钮，支持点击返回 launcher 和滚轮切换应用
+|   |   |-- CrownButton.qml                # 表冠按钮，支持单击返回 launcher/收起展开态，以及滚轮切换应用
 |   |   |-- DistanceBar.qml                # 距离分段条组件
 |   |   |-- DistanceSlider.qml             # 距离滑块组件
 |   |   |-- DistanceTip.qml                # 组合 GlowRing/DistanceSlider/DistanceBar 的距离提示容器
@@ -67,14 +70,14 @@ QDeskWatch/
 |   |   |-- GlowRing.qml                   # SVG 版发光环组件，按距离区间切换光效
 |   |   `-- LocationLabel.qml              # 城市标签组件，显示定位城市名和图标
 |   |-- singletons/
-|   |   |-- AppShell.qml                   # 全局应用状态单例，维护 app 注册表、当前模式和切换逻辑
+|   |   |-- AppShell.qml                   # 全局应用状态单例，维护 app 注册表、launcher/app/expanded 状态与展开模式切换逻辑
 |   |   |-- PropertySingleton.qml          # 全局缩放单例，CMake 中注册别名为 `PS`
 |   |   `-- Theme.qml                      # 主题单例，读取 default.theme 并解析图标资源路径
 |   `-- watchface/
 |       |-- DateTime.qml                   # 表盘右上角日期/时间组件，含秒钟翻转动画
-|       |-- EyeFace.qml                    # 眼睛表情组件，跟随鼠标位置移动
+|       |-- EyeFace.qml                    # 眼睛表情组件，跟随鼠标位置移动，并支持双击切换表盘内 app 展开/收起
 |       |-- TemperatureGauge.qml           # 温度弧形表盘，显示最低/最高/当前温度
-|       |-- WatchFace.qml                  # 主表盘布局，组合时间、天气、眼睛、应用区和表冠
+|       |-- WatchFace.qml                  # 主表盘布局，组合时间、天气、眼睛、应用区和表冠，并控制表盘内 app 展开动画与缩放
 |       `-- WeatherIcon.qml                # WMO 天气代码到图标的映射组件
 |-- resources/
 |   |-- app-icon/
@@ -82,6 +85,7 @@ QDeskWatch/
 |   |   |-- qdeskwatch.png                # 位图图标资源
 |   |   `-- qdeskwatch.svg                # 矢量图标资源
 |   |-- icons/
+|   |   |-- calculator.svg                # 计算器应用图标
 |   |   |-- glow_far.svg                  # 远端蓝色光环
 |   |   |-- glow_mid.svg                  # 中段青绿色光环
 |   |   |-- glow_near.svg                 # 近端橙色光环
@@ -140,14 +144,16 @@ QDeskWatch/
 |-- CMakeLists.txt                        # 主工程构建入口，注册 QML 模块、单例、资源和市场插件接入方式
 |-- LICENSE                               # 许可证文件
 |-- Main.qml                              # 顶层 QML 窗口，负责无边框窗口和拖拽移动
+|-- README.md                             # 项目简介、编译运行方式与使用/合规说明
 `-- main.cpp                              # 程序入口，初始化日志/崩溃捕获/系统托盘并注入 QML 上下文对象
 ```
 
 ## 关键链路
 
 - 启动链路：`CMakeLists.txt` 注册 `QDeskWatch` QML 模块与单例，`main.cpp` 创建 `QApplication`、安装日志与崩溃捕获、注入 `$marketMgr` / `$weatherMgr` / `$mouseMgr`，再加载 `Main.qml`，最终进入 `qml/watchface/WatchFace.qml`。
-- 表盘链路：`WatchFace.qml` 负责主布局，时间来自 `DateTime.qml`，天气展示由 `TemperatureGauge.qml` 和 `WeatherIcon.qml` 组成，鼠标互动表情由 `EyeFace.qml` 完成。
-- 应用切换链路：`qml/singletons/AppShell.qml` 维护应用注册表和当前模式，`qml/common/AppLauncher.qml` 展示入口网格，`qml/common/AppHost.qml` 根据状态加载具体应用。
+- 表盘链路：`WatchFace.qml` 负责主布局和表盘内 app 展开动画，时间来自 `DateTime.qml`，天气展示由 `TemperatureGauge.qml` 和 `WeatherIcon.qml` 组成，鼠标互动表情与双击展开入口由 `EyeFace.qml` 完成。
+- 应用切换链路：`qml/singletons/AppShell.qml` 维护应用注册表、`presentation` 与 `expandMode`，`qml/common/AppLauncher.qml` 展示入口网格，`qml/common/AppHost.qml` 根据状态加载并缓存具体应用。
+- 计算器链路：`qml/apps/calculator/CalculatorApp.qml` 管理显示、输入和运算状态，按钮交互复用 `qml/apps/calculator/CalcButton.qml`，应用注册入口位于 `qml/singletons/AppShell.qml`。
 - 备忘录链路：`qml/apps/memo/MemoApp.qml` 进入 `MemoList.qml`，时间输入依赖 `TimeEntryControl.qml`，心情选择依赖 `MoodPicker.qml`。
 - 天气链路：`src/manager/weathermanager.cpp` 先通过 `ipapi.co` 获取定位，再访问 `api.open-meteo.com` 拉取天气数据，结果通过 `$weatherMgr` 提供给 QML。
 - 市场链路：`src/market/marketpluginloader.cpp` 按 ABI 约定加载 `QDeskWatchMarket.dll`，成功则进入 `private-modules/market-plugin/src/marketmanager.cpp`，失败则回退到 `src/market/marketstub.cpp`；QML 侧入口是 `qml/apps/market/MarketApp.qml`。
@@ -158,9 +164,11 @@ QDeskWatch/
 - 想找程序入口、上下文注入、系统托盘：看 `main.cpp`。
 - 想找顶层窗口和表盘布局：看 `Main.qml`、`qml/watchface/WatchFace.qml`。
 - 想找应用切换与 launcher：看 `qml/singletons/AppShell.qml`、`qml/common/AppHost.qml`、`qml/common/AppLauncher.qml`。
+- 想找计算器交互与运算逻辑：看 `qml/apps/calculator/CalculatorApp.qml`、`qml/apps/calculator/CalcButton.qml`。
 - 想找天气数据来源和字段：看 `src/manager/weathermanager.*`。
 - 想找市场插件协议、加载与降级：看 `src/market/`；想找真实行情抓取逻辑：看 `private-modules/market-plugin/src/marketmanager.cpp`。
 - 想找备忘录主要交互：先看 `qml/apps/memo/MemoList.qml`。
 - 想找行情 UI：先看 `qml/apps/market/MarketApp.qml`，再看 `MarketDetailView.qml` 和 `MarketTrendChart.qml`。
+- 想找表盘内 app 展开/收起与缩放：看 `qml/watchface/WatchFace.qml`、`qml/watchface/EyeFace.qml`、`qml/singletons/AppShell.qml`。
 - 想找图标或主题映射：看 `resources/default.theme` 与 `qml/singletons/Theme.qml`。
 - 想找项目内可复用方法：看 `skills/` 下各 skill 的 `SKILL.md`。

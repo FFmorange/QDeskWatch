@@ -5,6 +5,8 @@ import QtQuick
 Item {
     id: root
 
+    signal doubleTapped()
+
     property real watchMouseX: 0
     property real watchMouseY: 0
 
@@ -153,5 +155,10 @@ Item {
             ctx.lineCap     = "round"
             ctx.stroke()
         }
+    }
+
+    TapHandler {
+        gesturePolicy: TapHandler.ReleaseWithinBounds
+        onDoubleTapped: root.doubleTapped()
     }
 }

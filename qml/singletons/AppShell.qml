@@ -12,6 +12,7 @@ QtObject {
             "icon": "memo_checklist",
             "accent": "#8FD3FF",
             "source": "qrc:/qt/qml/QDeskWatch/qml/apps/memo/MemoApp.qml",
+            "expandMode": "adaptive",
             "keepAlive": true
         },
         {
@@ -21,6 +22,7 @@ QtObject {
             "icon": "market_board",
             "accent": "#F2C66C",
             "source": "qrc:/qt/qml/QDeskWatch/qml/apps/market/MarketApp.qml",
+            "expandMode": "scale",
             "keepAlive": true
         },
         {
@@ -30,6 +32,7 @@ QtObject {
             "icon": "calculator",
             "accent": "#C9E18D",
             "source": "qrc:/qt/qml/QDeskWatch/qml/apps/calculator/CalculatorApp.qml",
+            "expandMode": "adaptive",
             "keepAlive": true
         }
     ]
@@ -37,10 +40,13 @@ QtObject {
     property string mode: "launcher"
     property string activeAppId: "memo"
     property string selectedAppId: "memo"
+    property string presentation: "compact"
 
     readonly property int appCount: root.apps.length
     readonly property var activeApp: root.appById(root.activeAppId)
     readonly property var selectedApp: root.appById(root.selectedAppId)
+    readonly property string activeExpandMode: root.activeApp && root.activeApp.expandMode ? root.activeApp.expandMode : "adaptive"
+    readonly property bool expanded: root.presentation === "expanded"
 
     function appById(appId) {
         for (var i = 0; i < root.apps.length; ++i) {
@@ -99,6 +105,7 @@ QtObject {
         if (!root.appById(root.selectedAppId))
             root.selectedAppId = root.activeAppId || root.apps[0].id
 
+        root.presentation = "compact"
         root.mode = "launcher"
     }
 
@@ -109,6 +116,7 @@ QtObject {
 
         root.activeAppId = app.id
         root.selectedAppId = app.id
+        root.presentation = "compact"
         root.mode = "app"
     }
 
@@ -116,7 +124,33 @@ QtObject {
         root.openApp(root.selectedAppId)
     }
 
+    function expandActiveApp() {
+        if (root.mode !== "app" || !root.activeApp)
+            return
+
+        root.presentation = "expanded"
+    }
+
+    function collapseExpandedApp() {
+        if (!root.expanded)
+            return
+
+        root.presentation = "compact"
+    }
+
+    function toggleExpanded() {
+        if (root.expanded)
+            root.collapseExpandedApp()
+        else
+            root.expandActiveApp()
+    }
+
     function crownPressed() {
+        if (root.expanded) {
+            root.collapseExpandedApp()
+            return
+        }
+
         if (root.mode !== "launcher")
             root.showLauncher()
     }

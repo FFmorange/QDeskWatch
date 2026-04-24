@@ -8,6 +8,7 @@ Item {
 
     implicitWidth: Math.round(96 * PS.scale)
     implicitHeight: Math.round(66 * PS.scale)
+    clip: false
 
     function _copyLoadedApps() {
         var next = {}

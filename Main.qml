@@ -5,7 +5,7 @@ import "./qml/watchface"
 Window {
     id: root
 
-    width:  watchFace.implicitWidth
+    width: watchFace.implicitWidth
     height: watchFace.implicitHeight
     visible: true
     flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
